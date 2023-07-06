@@ -1,0 +1,1 @@
+/home/chriscao/IdeaProjects/kfaka_no_gui/src/main/resources/testImage/test_image_1.jpg

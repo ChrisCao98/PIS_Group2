@@ -1,0 +1,7 @@
+{
+  "PET-CONF": "/home/chriscao/IdeaProjects/PIS_Group2/config/PETconfig.json",
+  "PET-TYPE": ["SPEED"],
+  "TESTDATA-PATH": "/home/chriscao/IdeaProjects/PIS_Group2/src/main/resources/PIS_data",
+  "IMAGE-OUTPUT-PATH": "/home/chriscao/IdeaProjects/PIS_Group2/src/main/resources/result/ImgOutput",
+  "USER-CONF": ""
+}
