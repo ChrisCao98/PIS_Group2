@@ -1,5 +1,27 @@
 # PIS_Group2
-first commit
-test
-##test
-if u want to know about this project,just from here
+## Project Introduction
+We want to evaluate the different type of latency or something else
+in the same scenario with different frame. My work is about Spark 
+Structured Streaming.
+## Install
+This project need [Spark](https://spark.apache.org/downloads.html),
+[Kafka](https://kafka.apache.org/downloads),
+[Redis](https://redis.io/download/),
+[Scala](https://www.scala-lang.org/download/). If u don't have them, need to download it.
+After install them, need to connect to kafka and redis.
+Connect to kafka: should in folder kafka
+```sh
+bin/kafka-storage.sh random-uuid
+bin/kafka-storage.sh format -t <uuid> -c ./config/kraft/server.properties  
+sudo bin/kafka-server-start.sh ./config/kraft/server.properties
+```
+Connect to redis;
+```sh
+sudo service redis-server start
+```
+Besides the dependencies in [Maven](./pom.xml) also is required.
+## Implement
+### Simulated data written in kafka
+Try to send data to kafka. And test it success or not. Now we assume
+only have three type of data. For instance GPS ,IMAGE and User-Input,
+### Stream Process
