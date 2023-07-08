@@ -1,7 +1,7 @@
 package Util
 
 import PETLoader.PETLoader_Spark
-import alg.StructuredStreaming01
+import alg.{SS03, SS03$, StructuredStreaming01}
 import org.apache.spark.api.java.function.MapFunction
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -203,6 +203,7 @@ class PETUtils extends Serializable {
     override def call(saveInfo: SaveInfo_Java): SaveInfo_Java = {
       initialize()
       if(SPEED_PET_ID==1){
+        println("qie huan")
         val client = RedisUtil.getJedisClient
         client.set("start_img","true")
         client.close()
@@ -240,12 +241,15 @@ class PETUtils extends Serializable {
       private var endTime: Long = _
       private var executionTime:String = _
       private var ss :String = _
+      println("zhixngjici")
       private val executionTimes_SPEED = ListBuffer[String]()
       private val executionTimes_LOCATION = ListBuffer[String]()
       private val executionTimes_IMAGE = ListBuffer[String]()
       private var fileWriter:FileWriter=_
       PETLoader = new PETLoader_Spark(confPath, Type, id)
       PETLoader.instantiate()
+      println("ceshi")
+//      println(PETLoader.getSparkSession)
       //    println("***********************")
       //    println(PETLoader.getSize)
 
@@ -286,7 +290,13 @@ class PETUtils extends Serializable {
 
         Type match {
           case "SPEED" =>
-            val invoke_speed: Double = PETLoader.invoke(saveInfo.getVel.asInstanceOf[T]).get(0).asInstanceOf[Double]
+//            if(aaaa){
+//              println("start")
+//              SS03.addQuery("test-image")
+//              println("finish")
+//            }
+
+            val invoke_speed = PETLoader.invoke(saveInfo.getVel.asInstanceOf[T]).get(0).asInstanceOf[Double]
             saveInfo.setVel(invoke_speed)
           case "LOCATION" =>
             val invoke_pos: util.ArrayList[(java.lang.Double, java.lang.Double)] = PETLoader.invoke(saveInfo.getPosition.asInstanceOf[T])

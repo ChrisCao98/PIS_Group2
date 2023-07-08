@@ -1,5 +1,8 @@
 package PETLoader;
 
+import alg.SS03;
+import alg.SS03$;
+import org.apache.spark.sql.SparkSession;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -37,7 +40,16 @@ public class PETLoader_Spark<T> implements Serializable {
 //    public Integer getId(){
 //        return id;
 //    }
+
+    //reconstruct for dynamic add or remove stream
+//    private SparkSession sparkSession = SS03$.MODULE$.getSpark();
 //
+//    public SparkSession getSparkSession() {
+//
+//
+//        return sparkSession;
+//    }
+
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
 //        if (classes != null) {
@@ -96,6 +108,7 @@ public class PETLoader_Spark<T> implements Serializable {
     }
 
     public void initialize() throws Exception {
+
         JSONParser parser = new JSONParser();
         try {
             Object obj = parser.parse(new FileReader(confPath));

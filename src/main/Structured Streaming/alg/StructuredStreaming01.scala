@@ -62,7 +62,7 @@ object StructuredStreaming01 {
     private var df_1: DataFrame = _
     private var df_2: DataFrame = _
 
-    def select(): (DataFrame, DataFrame) = {
+    def select(): DataFrame = {
       println("Spark:"+spark)
       println("zhixingla")
       //      sparkSession_all = sparkSession
@@ -70,6 +70,7 @@ object StructuredStreaming01 {
       println("start_gps: " + start_gps)
       println("start_img: " + start_img)
       if (start_gps) {
+        println("gps")
         println("Spark: " + spark)
         df_1 = spark.readStream
           .format("kafka")
@@ -78,13 +79,14 @@ object StructuredStreaming01 {
           .load()
       }
       if (start_img) {
-        df_2 = spark.readStream
+        println("img")
+        df_1 = spark.readStream
           .format("kafka")
           .option("kafka.bootstrap.servers", BOOTSTRAP_SERVERS)
           .option("subscribe", "test-image")
           .load()
       }
-      (df_1, df_2)
+      df_1
     }
   }
 
@@ -111,25 +113,25 @@ object StructuredStreaming01 {
     //    val df_image = load("test-image")
     val df_input = load("test-user-input")
     val df = PipLineReconstruct.select()
-    val df_gps = df._1
-    val df_image = df._2
-    if (df_gps != null){
-      val Ds_GPS = df_gps
-        .selectExpr("CAST(value AS STRING)")
-        .as[String]
-        .map(new PETUtils().TakeSomeInfo, saveInfoEncoder)
-        .map(new PETUtils().Evaluation, saveInfoEncoder)
-        .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "SPEED"), saveInfoEncoder)
-        //      .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "LOCATION"),saveInfoEncoder)
-        .map { SaveInfo_Java
-        =>
-          FinalGPSEvent(new Timestamp(SaveInfo_Java.getTimestamp.toLong),
-            SaveInfo_Java.getLocation.asScala.toList,
-            SaveInfo_Java.getAltitude,
-            SaveInfo_Java.getAcc_x,
-            SaveInfo_Java.getAcc_y,
-            SaveInfo_Java.getVel
-          )
+//    val df_gps = df._1
+//    val df_image = df._2
+//    if (df_gps != null){
+    val Ds_GPS = df
+      .selectExpr("CAST(value AS STRING)")
+      .as[String]
+      .map(new PETUtils().TakeSomeInfo, saveInfoEncoder)
+      .map(new PETUtils().Evaluation, saveInfoEncoder)
+      .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "SPEED"), saveInfoEncoder)
+      //      .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "LOCATION"),saveInfoEncoder)
+      .map { SaveInfo_Java
+      =>
+        FinalGPSEvent(new Timestamp(SaveInfo_Java.getTimestamp.toLong),
+          SaveInfo_Java.getLocation.asScala.toList,
+          SaveInfo_Java.getAltitude,
+          SaveInfo_Java.getAcc_x,
+          SaveInfo_Java.getAcc_y,
+          SaveInfo_Java.getVel
+        )
         }
       query_gps = Ds_GPS.toDF()
         .writeStream
@@ -138,31 +140,31 @@ object StructuredStreaming01 {
         .option("truncate", false) // 可选：显示完整的列内容
         //      .trigger(Trigger.Continuous("10 milliseconds"))
         .start()
-    }
-    println("1")
-    if (df_image != null) {
-      println("df_image zai ex")
-      val DS_Image = df_image
-        .select("value")
-        .as[Array[Byte]]
-        .map(new PETUtils().AddImageInfo, saveInfoEncoder)
-        .map(new PETUtils().EvaluationImage, saveInfoEncoder)
-        .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "IMAGE"), saveInfoEncoder)
-        .map {
-          saveInfo_Java =>
-            saveInfo_Java.getImg
-        }.toDF()
-      query_image = DS_Image
-        .writeStream
-        //      .foreachBatch(new ForeachWriter[Array[Byte]] {})
-        .foreachBatch { (batchDF: DataFrame, batchId: Long) =>
-          batchDF.foreach { row =>
-            val imageBytes = row.getAs[Array[Byte]]("value")
-            pathInfo.getGUI_img.displayImage(imageBytes)
-          }
-        }
-        .start()
-    }
+//    }
+//    println("1")
+//    if (df_image != null) {
+//      println("df_image zai ex")
+//      val DS_Image = df_image
+//        .select("value")
+//        .as[Array[Byte]]
+//        .map(new PETUtils().AddImageInfo, saveInfoEncoder)
+//        .map(new PETUtils().EvaluationImage, saveInfoEncoder)
+//        .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "IMAGE"), saveInfoEncoder)
+//        .map {
+//          saveInfo_Java =>
+//            saveInfo_Java.getImg
+//        }.toDF()
+//      query_image = DS_Image
+//        .writeStream
+//        //      .foreachBatch(new ForeachWriter[Array[Byte]] {})
+//        .foreachBatch { (batchDF: DataFrame, batchId: Long) =>
+//          batchDF.foreach { row =>
+//            val imageBytes = row.getAs[Array[Byte]]("value")
+//            pathInfo.getGUI_img.displayImage(imageBytes)
+//          }
+//        }
+//        .start()
+//    }
 
 
     //process user input
@@ -180,16 +182,16 @@ object StructuredStreaming01 {
       .foreach(new RedisWriter)
       .start()
 
-    if (df_gps != null) {
-      query_gps.awaitTermination()
-
-    }
-    //    query_gps.awaitTermination()
-    if (df_image != null) {
-      println("image?")
-      query_image.awaitTermination()
-
-    }
+//    if (df_gps != null) {
+//      query_gps.awaitTermination()
+//
+//    }
+    query_gps.awaitTermination()
+//    if (df_image != null) {
+//      println("image?")
+//      query_image.awaitTermination()
+//
+//    }
     //    query_image.awaitTermination()
     query_user.awaitTermination()
 

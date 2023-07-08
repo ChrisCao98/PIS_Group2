@@ -20,9 +20,15 @@ object SS03 {
   val hashMap = new mutable.HashMap[String, StreamingQuery]()
   val queries = scala.collection.mutable.ArrayBuffer.empty[StreamingQuery]
 
-  var topics: Seq[String] = Seq("test-data", "test-image", "test-user-input")
-  //  var topics: Seq[String] = Seq("test-data", "test-user-input")
+//  var topics: Seq[String] = Seq("test-data", "test-image", "test-user-input")
+    var topics: Seq[String] = Seq("test-data", "test-user-input")
+  def getTopics(): Seq[String] = {
+    topics
+  }
 
+  def getQueries()= {
+    queries
+  }
 
 
   def initialize(): Unit = {
@@ -44,6 +50,10 @@ object SS03 {
     .config("spark.sql.shuffle.partitions", "1")
     .config("spark.default.parallelism", "1")
     .getOrCreate()
+
+  def getSpark(): SparkSession = {
+    spark
+  }
 
   import spark.implicits._
   implicit val saveInfoEncoder: Encoder[SaveInfo_Java] = Encoders.javaSerialization[SaveInfo_Java]
@@ -72,7 +82,7 @@ object SS03 {
   }
 
 
-  def addQuery(newtopic: String): Unit = {
+  def addQuery(newtopic: String):Unit = {
     if (!topics.contains(newtopic) && newtopic.equals("test-image")) {
       val query = queryForImage("test-image")
       queries += query

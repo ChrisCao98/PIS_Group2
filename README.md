@@ -25,3 +25,11 @@ Besides the dependencies in [Maven](./pom.xml) also is required.
 Try to send data to kafka. And test it success or not. Now we assume
 only have three type of data. For instance GPS ,IMAGE and User-Input,
 ### Stream Process
+Remove stream:
+![remove stream](./data/picture/remove_stream.png)
+Add stream:
+![add stream](./data/picture/add_stream.png)
+![after add](./data/picture/after_add.png)
+#### Load data
+Subscribe topic from kafka
+#### Process

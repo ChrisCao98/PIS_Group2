@@ -32,7 +32,6 @@ object StructuredStreaming {
     .config("spark.sql.shuffle.partitions", "1")
     .config("spark.default.parallelism", "1")
     .getOrCreate()
-
   import spark.implicits._
 
   def load(TopicName:String):DataFrame = {
@@ -126,9 +125,12 @@ object StructuredStreaming {
       .foreach(new RedisWriter)
       .start()
 
+    println("query_gps.id: "+query_gps.id)
+    println("query_img.id: "+query_img.id)
+    println("query_user.id: "+query_user.id)
+
 
     query_gps.awaitTermination()
-
     query_img.awaitTermination()
     query_user.awaitTermination()
 
