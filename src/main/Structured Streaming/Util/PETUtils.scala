@@ -1,7 +1,7 @@
 package Util
 
 import PETLoader.PETLoader_Spark
-import alg.{SS03, SS03$, StructuredStreaming01}
+import alg.{SS03, StructuredStreaming01}
 import org.apache.spark.api.java.function.MapFunction
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -207,8 +207,9 @@ class PETUtils extends Serializable {
         val client = RedisUtil.getJedisClient
         client.set("start_img","true")
         client.close()
-
-        StructuredStreaming01.PipLineReconstruct.select()
+        //        stopQuery("test-image")
+//        SS03.addQuery("test-image")
+//        StructuredStreaming01.PipLineReconstruct.select()
       }
       if(saveInfo.getPosition != null){
         val distance = MathUtils.calculateDistance(UserHome, saveInfo.getPosition)

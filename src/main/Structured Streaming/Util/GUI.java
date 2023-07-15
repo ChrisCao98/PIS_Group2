@@ -31,20 +31,16 @@ public class GUI extends JFrame {
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(imageData);
                 BufferedImage originalImage = ImageIO.read(inputStream);
 
-                // 设置图像标签的图像
                 imageLabel.setIcon(new ImageIcon(originalImage));
 
-                // 调整图像大小以适应标签
                 int labelWidth = imageLabel.getWidth();
                 int labelHeight = imageLabel.getHeight();
 
-                // 创建缩放后的图像
                 BufferedImage scaledImage = new BufferedImage(labelWidth, labelHeight, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D g2d = scaledImage.createGraphics();
                 g2d.drawImage(originalImage, 0, 0, labelWidth, labelHeight, null);
                 g2d.dispose();
 
-                // 设置图像标签的图像
                 imageLabel.setIcon(new ImageIcon(scaledImage));
 
                 pack();
@@ -72,10 +68,8 @@ public class GUI extends JFrame {
         // 创建图形化界面
         GUI gui = new GUI();
 
-        // 假设你有一个方法，从某处获取字节数组的图像数据
         byte[] imageData = readImage("/home/chriscao/IdeaProjects/kfaka_no_gui/src/main/resources/testImage/image.jpg");
 
-        // 在图形化界面上显示图像
         gui.displayImage(imageData);
     }
 

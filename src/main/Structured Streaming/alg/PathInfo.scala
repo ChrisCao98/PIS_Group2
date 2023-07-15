@@ -6,7 +6,7 @@ import org.json.simple.parser.JSONParser
 
 import java.io.FileReader
 import java.util
-
+//here we can reach some pathInfo and GUI
 case class PathInfo(confPath: String) {
   protected var PETconfpath: String = _
   protected var ImageOutputPath: String = _

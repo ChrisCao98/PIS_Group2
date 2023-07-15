@@ -33,3 +33,13 @@ Add stream:
 #### Load data
 Subscribe topic from kafka
 #### Process
+Because the data may take much redundant Info, so I make a class to select the info,
+which is needed.
+#### Evaluation
+Because it may have some trigger to change the PET, so in this class just measure the
+conditions reached or not.
+#### ApplyPET
+Loaf PET(from external lib) and process data which should be processed.
+Or according to the data PEt required to merge stream.
+#### StreamingQuery
+And then generate a StreamingQuery to monitor and manage the query.

@@ -1,13 +1,12 @@
 package alg
 
 import Util.{PETUtils, RedisUtil, SaveInfo_Java}
-import alg.StructuredStreaming.pathInfo
-import org.apache.spark.sql.functions.{col, expr, lit, monotonically_increasing_id}
+import org.apache.spark.sql.functions.{col, expr, lit}
 import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.{DataFrame, Encoder, Encoders, ForeachWriter, Row, SparkSession}
 
 import java.sql.Timestamp
-
+//merge stream test,only a demo for gps-data and image-data
 object StructuredStreaming02 {
   private val BOOTSTRAP_SERVERS = "localhost:9092"
   val path: String = "config/Pipeconfig.json"
