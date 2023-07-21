@@ -1,7 +1,8 @@
 package alg
 
 
-import Util.{PETUtils, RedisUtil, RedisWriter, SaveInfo_Java}
+import Util.{CsvWriter, PETUtils, RedisUtil, RedisWriter, SaveInfo_Java}
+import org.apache.spark.sql.functions.{col, concat_ws}
 import org.apache.spark.sql.{DataFrame, Encoder, Encoders, SparkSession}
 
 import java.sql.Timestamp
@@ -15,12 +16,12 @@ object StructuredStreaming {
 
   def initialize(): Unit = {
     val client = RedisUtil.getJedisClient
-    client.set("SPEED", "0")
-    client.set("LOCATION", "0")
-    client.set("IMAGE", "0")
-    client.set("start_gps","true")
-    client.set("start_location","false")
-    client.set("start_img","false")
+    client.set("SpeedPET", "0")
+    client.set("LocationPET", "0")
+    client.set("CameraPET", "0")
+    client.set("CameraSituation", "0")
+    client.set("LocationSituation", "0")
+    client.set("SpeedSituation", "0")
     client.close()
   }
 
@@ -71,18 +72,18 @@ object StructuredStreaming {
       .map(new PETUtils().TakeSomeInfo, saveInfoEncoder)
       .map(new PETUtils().Evaluation, saveInfoEncoder)
       .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "SPEED"),saveInfoEncoder)
-//      .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "LOCATION"),saveInfoEncoder)
-      .map { SaveInfo_Java
-      =>
-        FinalGPSEvent(new Timestamp(SaveInfo_Java.getTimestamp.toLong),
-          SaveInfo_Java.getLocation.asScala.toList,
-          SaveInfo_Java.getAltitude,
-          SaveInfo_Java.getAcc_x,
-          SaveInfo_Java.getAcc_y,
-          SaveInfo_Java.getVel
-        )
-      }
-    println("1")
+      .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "LOCATION"),saveInfoEncoder)
+//      .map { SaveInfo_Java
+//      =>
+//        FinalGPSEvent(new Timestamp(SaveInfo_Java.getTimestamp.toLong),
+//          SaveInfo_Java.getLocation.asScala.toList,
+//          SaveInfo_Java.getAltitude,
+//          SaveInfo_Java.getAcc_x,
+//          SaveInfo_Java.getAcc_y,
+//          SaveInfo_Java.getVel
+////          SaveInfo_Java.getTimerRecord.asScala.toList
+//        )
+//      }
     //process image
     val DS_Image = df_image
       .select("value")
@@ -97,15 +98,18 @@ object StructuredStreaming {
 
 
 
-    //for GPS data
-    val query_gps = Ds_GPS.toDF()
-      .writeStream
-      .outputMode("append")
-      .format("console")
-      .option("truncate", false) // 可选：显示完整的列内容
-//      .trigger(Trigger.Continuous("10 milliseconds"))
-      .start()
+//    val query_gps = Ds_GPS.toDF()
+//      .writeStream
+//      .outputMode("append")
+//      .format("console")
+//      .option("truncate", false) // 可选：显示完整的列内容
+////      .trigger(Trigger.Continuous("10 milliseconds"))
+//      .start()
 
+    val query_gps = Ds_GPS
+      .writeStream
+      .foreach(new CsvWriter)
+      .start()
 
 
     //for image data

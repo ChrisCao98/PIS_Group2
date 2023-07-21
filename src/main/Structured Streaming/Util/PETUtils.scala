@@ -5,10 +5,11 @@ import alg.{SS03, StructuredStreaming01}
 import org.apache.spark.api.java.function.MapFunction
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import java.io.{BufferedWriter, FileWriter, PrintWriter}
+import java.io.{BufferedWriter, File, FileWriter, PrintWriter}
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
-import java.util
+import java.{lang, util}
+import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.collection.mutable.ListBuffer
 //import test.Location.{LocationAnonymizer00, LocationAnonymizer01}
 import scala.util.Try
@@ -17,45 +18,6 @@ import scala.util.Try
 class PETUtils extends Serializable {
 
 
-//  private var sparkSession_all: SparkSession=_
-//  object PipLineReconstruct{
-//    private val BOOTSTRAP_SERVERS = "localhost:9092"
-//    private var start_gps = true
-//    private var start_img = false
-//    private var start_location = false
-//    def initialize(): Unit = {
-//      val client = RedisUtil.getJedisClient
-//      start_gps = client.get("start_gps").toBoolean
-//      start_location = client.get("start_location").toBoolean
-//      start_img = client.get("start_img").toBoolean
-//      client.close()
-//    }
-//    private var df_1:DataFrame = _
-//    private var df_2:DataFrame = _
-//    def select(): (DataFrame,DataFrame) = {
-//      println("zhixingla")
-////      sparkSession_all = sparkSession
-//      initialize()
-//      println("start_gps: "+start_gps)
-//      println("start_img: "+start_img)
-//      if(start_gps){
-//        println("Spark: "+spark)
-//        df_1 = spark.readStream
-//          .format("kafka")
-//          .option("kafka.bootstrap.servers", BOOTSTRAP_SERVERS)
-//          .option("subscribe", "test-data")
-//          .load()
-//      }
-//      if(start_img){
-//        df_2 = spark.readStream
-//          .format("kafka")
-//          .option("kafka.bootstrap.servers", BOOTSTRAP_SERVERS)
-//          .option("subscribe", "test-image")
-//          .load()
-//      }
-//      (df_1,df_2)
-//    }
-//  }
 
 
   object TakeSomeInfo extends MapFunction[String, SaveInfo_Java] {
@@ -64,11 +26,13 @@ class PETUtils extends Serializable {
       // 将 Row 转换为 alg.SelectEvent 对象
       val words: Array[String] = line.split(",")
 
-      new SaveInfo_Java(words(0).toDouble,
+      val saveInfo_Java: SaveInfo_Java = new SaveInfo_Java(words(0).toDouble,
         words(1).toDouble, words(2).toDouble,
         words(3).toDouble, words(12).toDouble,
         words(13).toDouble, words(9).toDouble
       )
+      saveInfo_Java.recordTimer()
+      saveInfo_Java
 //      val selectEvent = alg.SelectEvent(
 //        gpsEvent.timestamp,
 //        gpsEvent.lat,
@@ -97,6 +61,7 @@ class PETUtils extends Serializable {
     override def call(array: Array[Byte]): SaveInfo_Java = {
       val saveInfo_Java: SaveInfo_Java = new SaveInfo_Java()
       saveInfo_Java.setImg(array)
+      saveInfo_Java.recordTimer()
       saveInfo_Java
     }
 
@@ -136,9 +101,19 @@ class PETUtils extends Serializable {
   }
 
   object EvaluationImage extends MapFunction[SaveInfo_Java, SaveInfo_Java] {
-    private var count = 0
     private val UserHome = new Tuple2[java.lang.Double, java.lang.Double](48.98561, 8.39571)
+    private val thredhold = 0.00135
+    private var CameraSituation: Boolean = _
 
+    private var IMAGE_PET_ID: Int = _
+    private val Type_I = "IMAGE"
+
+    def initialize(): Unit = {
+      val client = RedisUtil.getJedisClient
+      IMAGE_PET_ID = client.get("CameraPET").toInt
+      CameraSituation = client.get("CameraSituation").toBoolean
+      client.close()
+    }
     def update(): Unit = {
       val client = RedisUtil.getJedisClient
       client.set("SPEED", "1")
@@ -146,10 +121,8 @@ class PETUtils extends Serializable {
     }
 
     override def call(saveInfo: SaveInfo_Java): SaveInfo_Java = {
-      count += 1
 
       saveInfo.setPETPolicy("IMAGE", 1)
-      println(count)
 
       saveInfo
     }
@@ -160,11 +133,15 @@ class PETUtils extends Serializable {
     private val UserHome = new Tuple2[java.lang.Double, java.lang.Double](48.98561, 8.39571)
     private val thredhold = 0.00135
     private var SPEED_PET_ID : Int= _
-    private val Type_S = "SPEED"
+    private val Type_S = "SpeedPET"
+    private var CameraSituation :Boolean = _
+    private var LocationSituation :Boolean = _
+    private var SpeedSituation :Boolean = _
+
     private var LOCATION_PET_ID : Int= _
-    private val Type_L = "LOCATION"
+    private val Type_L = "LocationPET"
     private var IMAGE_PET_ID : Int= _
-    private val Type_I = "IMAGE"
+    private val Type_I = "CameraPET"
 //    var spark: SparkSession = null
 //    def  setSpart(sparkSession: SparkSession): Unit = {
 //      spark= sparkSession
@@ -181,9 +158,19 @@ class PETUtils extends Serializable {
 
     def initialize(): Unit ={
       val client = RedisUtil.getJedisClient
-      SPEED_PET_ID = client.get("SPEED").toInt
-      LOCATION_PET_ID = client.get("LOCATION").toInt
-      IMAGE_PET_ID = client.get("IMAGE").toInt
+
+      SPEED_PET_ID = client.get("SpeedPET").toInt
+      IMAGE_PET_ID = client.get("CameraPET").toInt
+      println("IMAGE_PET_ID: "+IMAGE_PET_ID)
+//      println("<<<<<>>>>>")
+//      println(client.get("SpeedSituation"))
+//      println(client.get("SpeedSituation").toInt)
+//      println("<<<<<>>>>>")
+//      SpeedSituation = client.get("SpeedSituation").toBoolean
+      SpeedSituation = if (client.get("SpeedSituation") == "0") false else true
+      println("SpeedSituation: "+SpeedSituation)
+      LocationSituation = if (client.get("LocationSituation") == "0") false else true
+      CameraSituation = if (client.get("CameraSituation") == "0") false else true
       client.close()
     }
 
@@ -192,9 +179,9 @@ class PETUtils extends Serializable {
       client.set(Type, ID.toString)
       Type match {
 
-        case "SPEED" => SPEED_PET_ID = client.get("SPEED").toInt
-        case "LOCATION" => LOCATION_PET_ID = client.get("LOCATION").toInt
-        case "IMAGE" => IMAGE_PET_ID = client.get("IMAGE").toInt
+        case "SPEED" => SPEED_PET_ID = client.get("SpeedPET").toInt
+        case "LOCATION" => LOCATION_PET_ID = client.get("LocationPET").toInt
+        case "IMAGE" => IMAGE_PET_ID = client.get("CameraPET").toInt
       }
       client.close()
     }
@@ -202,32 +189,50 @@ class PETUtils extends Serializable {
 
     override def call(saveInfo: SaveInfo_Java): SaveInfo_Java = {
       initialize()
-      if(SPEED_PET_ID==1){
-        println("qie huan")
-        val client = RedisUtil.getJedisClient
-        client.set("start_img","true")
-        client.close()
-        //        stopQuery("test-image")
-//        SS03.addQuery("test-image")
-//        StructuredStreaming01.PipLineReconstruct.select()
-      }
-      if(saveInfo.getPosition != null){
-        val distance = MathUtils.calculateDistance(UserHome, saveInfo.getPosition)
-        val locationPET: Int = if (distance < thredhold) 1 else 0
-        if (locationPET != LOCATION_PET_ID) {
-          println("Policy changed from " + LOCATION_PET_ID + " to " + locationPET)
-          update(Type_L, locationPET)
-        }
-        saveInfo.setPETPolicy(Type_L, LOCATION_PET_ID)
 
+//      if(SPEED_PET_ID==1){
+//        println("qie huan")
+//        val client = RedisUtil.getJedisClient
+//        client.set("start_img","true")
+//        client.close()
+//        //        stopQuery("test-image")
+////        SS03.addQuery("test-image")
+////        StructuredStreaming01.PipLineReconstruct.select()
+//      }
+
+      if (!SpeedSituation) {
+        saveInfo.setPETPolicy(Type_S, 0)
+      } else {
+        saveInfo.setPETPolicy(Type_S, SPEED_PET_ID)
       }
-      saveInfo.setPETPolicy(Type_S, SPEED_PET_ID)
-      saveInfo.setPETPolicy(Type_I, IMAGE_PET_ID)
+
+      if (!LocationSituation) {
+        saveInfo.setPETPolicy(Type_L, 0)
+      } else {
+        if (saveInfo.getPosition != null) {
+          val distance = MathUtils.calculateDistance(UserHome, saveInfo.getPosition)
+          val locationPET: Int = if (distance < thredhold) 1 else 0
+          if (locationPET != LOCATION_PET_ID) {
+            println("Policy changed from " + LOCATION_PET_ID + " to " + locationPET)
+            update(Type_L, locationPET)
+          }
+          saveInfo.setPETPolicy(Type_L, LOCATION_PET_ID)
+
+        }
+      }
+
+      if (!CameraSituation) {
+        saveInfo.setPETPolicy(Type_I, 0)
+      } else {
+        saveInfo.setPETPolicy(Type_I, IMAGE_PET_ID)
+      }
+
+      saveInfo.recordTimer()
       saveInfo
     }
   }
 
-
+  import org.apache.commons.csv.{CSVFormat, CSVPrinter}
 
   object ApplyPET extends Serializable {
     def apply[T](confPath: String, Type: String): ApplyPET[T] = {
@@ -257,8 +262,10 @@ class PETUtils extends Serializable {
       //       Reload PET method
       private def reloadPET(): Try[Unit] = Try {
         startTime= System.currentTimeMillis()
+
         PETLoader.reloadPET(id)
         PETLoader.instantiate()
+
         endTime= System.currentTimeMillis()
 //        endTime = System.nanoTime()
         executionTime = Duration(endTime - startTime, TimeUnit.MILLISECONDS).toString()
@@ -288,6 +295,7 @@ class PETUtils extends Serializable {
           reloadPET()
 
         }
+        saveInfo.recordTimer()
 
         Type match {
           case "SPEED" =>
@@ -309,6 +317,8 @@ class PETUtils extends Serializable {
           case _ =>
             throw new IllegalStateException("Unexpected value: " + Type)
         }
+
+
         saveInfo
       }
     }

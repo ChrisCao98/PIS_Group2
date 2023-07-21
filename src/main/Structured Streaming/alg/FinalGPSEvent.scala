@@ -1,6 +1,7 @@
 package alg
 
 import java.sql.Timestamp
+import java.util
 
 case class FinalGPSEvent(
                           timestamp: Timestamp,
@@ -8,5 +9,7 @@ case class FinalGPSEvent(
                           altitude: Double,
                           acc_x: Double,
                           acc_y: Double,
-                          vel: Double
+                          vel: Double,
+//                          list : List[java.lang.Long]
+
                         )

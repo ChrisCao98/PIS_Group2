@@ -16,12 +16,12 @@ object StructuredStreaming01 {
 
   def initialize(): Unit = {
     val client = RedisUtil.getJedisClient
-    client.set("SPEED", "0")
-    client.set("LOCATION", "0")
-    client.set("IMAGE", "0")
-    client.set("start_gps","true")
-    client.set("start_location","false")
-    client.set("start_img","false")
+    client.set("SpeedPET", "0")
+    client.set("LocationPET", "0")
+    client.set("CameraPET", "0")
+    client.set("CameraSituation", "0")
+    client.set("LocationSituation", "0")
+    client.set("SpeedSituation", "0")
     client.close()
   }
 
@@ -131,6 +131,7 @@ object StructuredStreaming01 {
           SaveInfo_Java.getAcc_x,
           SaveInfo_Java.getAcc_y,
           SaveInfo_Java.getVel
+//          SaveInfo_Java.getTimerRecord.asScala.toList
         )
         }
       query_gps = Ds_GPS.toDF()

@@ -17,12 +17,23 @@ public class SaveInfo_Java implements Serializable{
     private Double vel;
 
     private byte[] img;
+    protected ArrayList<Long> TimerRecord;
+
+
+    public void recordTimer(){
+        TimerRecord.add(System.nanoTime());
+    }
+
+    public ArrayList<Long> getTimerRecord() {
+        return TimerRecord;
+    }
 
     public SaveInfo_Java() {
         PETPolicy = new HashMap<>();
         PETPolicy.put("SPEED", 0);
         PETPolicy.put("IMAGE", 0);
         PETPolicy.put("LOCATION", 0);
+        TimerRecord = new ArrayList<>();
     }
 
     public SaveInfo_Java(Double timestamp, Double latitude, Double longitude, Double altitude, Double acc_x, Double acc_y, Double vel) {
@@ -37,6 +48,7 @@ public class SaveInfo_Java implements Serializable{
         this.acc_x = acc_x;
         this.acc_y = acc_y;
         this.vel = vel;
+        TimerRecord = new ArrayList<>();
     }
 
     public HashMap<String, Integer> getPETPolicy() {
