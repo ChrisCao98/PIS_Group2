@@ -123,7 +123,7 @@ class PETUtils extends Serializable {
     override def call(saveInfo: SaveInfo_Java): SaveInfo_Java = {
 
       saveInfo.setPETPolicy("IMAGE", 1)
-
+      saveInfo.recordTimer()
       saveInfo
     }
   }
@@ -142,16 +142,8 @@ class PETUtils extends Serializable {
     private val Type_L = "LocationPET"
     private var IMAGE_PET_ID : Int= _
     private val Type_I = "CameraPET"
-//    var spark: SparkSession = null
-//    def  setSpart(sparkSession: SparkSession): Unit = {
-//      spark= sparkSession
-//    }
-//    println("count chushihua")
-//    var count :Int = 0
-//    println(count)
-//    println("chushihua?")
-//    initialize()
-//    println("jieshu?")
+
+
     println(Type_S,SPEED_PET_ID)
     println(Type_L,LOCATION_PET_ID)
     println(Type_I,IMAGE_PET_ID)
@@ -162,11 +154,7 @@ class PETUtils extends Serializable {
       SPEED_PET_ID = client.get("SpeedPET").toInt
       IMAGE_PET_ID = client.get("CameraPET").toInt
       println("IMAGE_PET_ID: "+IMAGE_PET_ID)
-//      println("<<<<<>>>>>")
-//      println(client.get("SpeedSituation"))
-//      println(client.get("SpeedSituation").toInt)
-//      println("<<<<<>>>>>")
-//      SpeedSituation = client.get("SpeedSituation").toBoolean
+
       SpeedSituation = if (client.get("SpeedSituation") == "0") false else true
       println("SpeedSituation: "+SpeedSituation)
       LocationSituation = if (client.get("LocationSituation") == "0") false else true
@@ -204,6 +192,7 @@ class PETUtils extends Serializable {
         saveInfo.setPETPolicy(Type_S, 0)
       } else {
         saveInfo.setPETPolicy(Type_S, SPEED_PET_ID)
+
       }
 
       if (!LocationSituation) {
@@ -223,8 +212,10 @@ class PETUtils extends Serializable {
 
       if (!CameraSituation) {
         saveInfo.setPETPolicy(Type_I, 0)
+        println("c policy: 0")
       } else {
         saveInfo.setPETPolicy(Type_I, IMAGE_PET_ID)
+        println("c policy: 1")
       }
 
       saveInfo.recordTimer()
@@ -248,9 +239,9 @@ class PETUtils extends Serializable {
       private var executionTime:String = _
       private var ss :String = _
       println("zhixngjici")
-      private val executionTimes_SPEED = ListBuffer[String]()
-      private val executionTimes_LOCATION = ListBuffer[String]()
-      private val executionTimes_IMAGE = ListBuffer[String]()
+//      private val executionTimes_SPEED = ListBuffer[String]()
+//      private val executionTimes_LOCATION = ListBuffer[String]()
+//      private val executionTimes_IMAGE = ListBuffer[String]()
       private var fileWriter:FileWriter=_
       PETLoader = new PETLoader_Spark(confPath, Type, id)
       PETLoader.instantiate()
@@ -274,12 +265,12 @@ class PETUtils extends Serializable {
         Type match {
           case "SPEED" =>
             println("??????write in?SPEED")
-            fileWriter= new FileWriter("./data/execution_times_SPEED.txt", true)
+            fileWriter= new FileWriter("./data/ChangePET_times_SPEED.txt", true)
           case "LOCATION"=>
             println("??????write in?LOCATION")
-            fileWriter = new FileWriter("./data/execution_times_LOCATION.txt", true)
+            fileWriter = new FileWriter("./data/ChangePET_times_LOCATION.txt", true)
           case "IMAGE" =>
-            fileWriter = new FileWriter("./data/execution_times_IMAGE.txt", true)
+            fileWriter = new FileWriter("./data/ChangePET_times_IMAGE.txt", true)
         }
         val bufferedWriter = new BufferedWriter(fileWriter)
         val writer = new PrintWriter(bufferedWriter)
@@ -296,7 +287,7 @@ class PETUtils extends Serializable {
 
         }
         saveInfo.recordTimer()
-
+//        println("size:" + saveInfo.getTimerRecord.size())
         Type match {
           case "SPEED" =>
 //            if(aaaa){

@@ -25,14 +25,16 @@ class RedisWriter extends ForeachWriter[String] {
       val fields = value.split(",")
       fields(1) match {
         case "speed" =>
-          var SpeedSituation = jedisClient.get("SpeedSituation").toBoolean
+          var SpeedSituation = if (jedisClient.get("SpeedSituation") == "0") false else true
+//          var SpeedSituation = jedisClient.get("SpeedSituation").toBoolean
           SpeedSituation = !SpeedSituation
           val numericValue: Int = if (SpeedSituation) 1 else 0
           jedisClient.set("SpeedSituation", numericValue.toString)
           System.out.println("Switch Speed environment!" + SpeedSituation)
 
         case "camera" =>
-          var CameraSituation = jedisClient.get("CameraSituation").toBoolean
+
+          var CameraSituation = if (jedisClient.get("CameraSituation") == "0") false else true
           CameraSituation = !CameraSituation
           val numericValue: Int = if (CameraSituation) 1 else 0
           jedisClient.set("CameraSituation", numericValue.toString)

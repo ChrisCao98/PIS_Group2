@@ -1,15 +1,19 @@
 package alg
 
 
-import Util.{CsvWriter, PETUtils, RedisUtil, RedisWriter, SaveInfo_Java}
+import Util.{CsvWriter, ImgWriter, PETUtils, RedisUtil, RedisWriter, SaveInfo_Java}
+import org.apache.commons.csv.{CSVFormat, CSVPrinter}
 import org.apache.spark.sql.functions.{col, concat_ws}
 import org.apache.spark.sql.{DataFrame, Encoder, Encoders, SparkSession}
 
+import java.io.{BufferedWriter, File, FileWriter}
+import java.{lang, util}
 import java.sql.Timestamp
 import scala.collection.JavaConverters.asScalaBufferConverter
 
 object StructuredStreaming {
   private val BOOTSTRAP_SERVERS = "localhost:9092"
+//  private val BOOTSTRAP_SERVERS = "192.168.1.181:9092"
   val path: String = "config/Pipeconfig.json"
   val pathInfo = PathInfo(path)
   initialize()
@@ -89,12 +93,14 @@ object StructuredStreaming {
       .select("value")
       .as[Array[Byte]]
       .map(new PETUtils().AddImageInfo, saveInfoEncoder)
-      .map(new PETUtils().EvaluationImage, saveInfoEncoder)
+//      .map(new PETUtils().EvaluationImage, saveInfoEncoder)
+      .map(new PETUtils().Evaluation, saveInfoEncoder)
       .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "IMAGE"), saveInfoEncoder)
-      .map {
-        saveInfo_Java =>
-          saveInfo_Java.getImg
-      }.toDF()
+//      .map {
+//        saveInfo_Java =>
+//          saveInfo_Java.getImg
+//      }
+//      .toDF()
 
 
 
@@ -111,18 +117,47 @@ object StructuredStreaming {
       .foreach(new CsvWriter)
       .start()
 
-
-    //for image data
     val query_img = DS_Image
       .writeStream
-//      .foreachBatch(new ForeachWriter[Array[Byte]] {})
-      .foreachBatch { (batchDF: DataFrame, batchId: Long) =>
-        batchDF.foreach { row =>
-          val imageBytes = row.getAs[Array[Byte]]("value")
-          pathInfo.getGUI_img.displayImage(imageBytes)
-        }
-      }
+      .foreach(new ImgWriter)
       .start()
+
+
+    //for image data
+
+//    val query_img = DS_Image
+//      .writeStream
+////      .foreachBatch(new ForeachWriter[Array[Byte]] {})
+//      .foreachBatch { (batchDF: DataFrame, batchId: Long) =>
+//        batchDF.foreach { row =>
+//          val saveInfo_Java = row.getAs[SaveInfo_Java]("value")
+//          val imageBytes = saveInfo_Java.getImg
+//          val filePath = "/home/chriscao/IdeaProjects/PIS_Group2/data/img.csv"
+//          val writer: BufferedWriter = new BufferedWriter(new FileWriter(filePath, true))
+//          val csvPrinter: CSVPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)
+//          saveInfo_Java.recordTimer()
+//          val list: util.ArrayList[lang.Long] = saveInfo_Java.getTimerRecord
+//          println(list.size())
+//
+//          try {
+//            if (new File(filePath).exists()) {
+//              csvPrinter.println()
+//              csvPrinter.flush()
+//            }
+//
+//            list.asScala.foreach { element =>
+//              csvPrinter.print(element.toString)
+//            }
+//
+//          }
+//
+//          csvPrinter.close()
+//          writer.close()
+//
+//          pathInfo.getGUI_img.displayImage(imageBytes)
+//        }
+//      }
+//      .start()
 
     val query_user = DS_User
       .writeStream

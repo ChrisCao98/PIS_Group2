@@ -1,6 +1,7 @@
 package alg
 
-import Util.{PETUtils, RedisUtil, SaveInfo_Java}
+import Util.{CsvWriter, PETUtils, RedisUtil, RedisWriter, SaveInfo_Java}
+import alg.StructuredStreaming.pathInfo
 import org.apache.spark.sql.functions.{col, expr, lit}
 import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.{DataFrame, Encoder, Encoders, ForeachWriter, Row, SparkSession}
@@ -50,6 +51,11 @@ object StructuredStreaming02 {
     val df_image = load("test-image")
     val df_input = load("test-user-input")
     import spark.implicits._
+    val DS_User = df_input
+      .selectExpr("CAST(value AS STRING)")
+      .as[String]
+
+
     val Ds_GPS = df_gps
       .selectExpr("CAST(value AS STRING) AS GPS" ,"CAST(timestamp AS Timestamp)")
       .withColumn("index", lit(1))
@@ -86,28 +92,41 @@ object StructuredStreaming02 {
           )
           val imageB = lines._2
           saveInfo_Java.setImg(imageB)
-          println(saveInfo_Java.getImg)
+//          println(saveInfo_Java.getImg)
           saveInfo_Java
       }
-      .map(new PETUtils().EvaluationImage, saveInfoEncoder)
+      .map(new PETUtils().Evaluation, saveInfoEncoder)
       .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "IMAGE"), saveInfoEncoder)
-      .map {
-        saveInfo_Java =>
-          saveInfo_Java.getImg
-      }.toDF()
-    Df.printSchema()
+
+      .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "SPEED"), saveInfoEncoder)
+      .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "LOCATION"), saveInfoEncoder)
+//      .map {
+//        saveInfo_Java =>
+//          saveInfo_Java.getImg
+//      }.toDF()
+//    Df.printSchema()
+
 
     val query_image = Df
       .writeStream
-      .foreachBatch { (batchDF: DataFrame, batchId: Long) =>
-        batchDF.foreach { row =>
-          println("paole?")
-          val imageBytes = row.getAs[Array[Byte]]("value")
-          pathInfo.getGUI_img.displayImage(imageBytes)
-        }
-      }
+      .foreach(new CsvWriter)
       .start()
-    query_image.awaitTermination()
 
+    val query_user = DS_User
+      .writeStream
+      .foreach(new RedisWriter)
+      .start()
+//    val query_image = Df
+//      .writeStream
+//      .foreachBatch { (batchDF: DataFrame, batchId: Long) =>
+//        batchDF.foreach { row =>
+//          println("paole?")
+//          val imageBytes = row.getAs[Array[Byte]]("value")
+//          pathInfo.getGUI_img.displayImage(imageBytes)
+//        }
+//      }
+//      .start()
+    query_image.awaitTermination()
+    query_user.awaitTermination()
   }
 }

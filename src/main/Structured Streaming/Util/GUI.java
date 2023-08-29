@@ -24,11 +24,14 @@ public class GUI extends JFrame {
         pack();
         setVisible(true);
     }
+
+    //hint: make sure the size of the picture
     public void displayImage(byte[] imageData) {
         SwingUtilities.invokeLater(() -> {
             try {
                 // 将字节数组转换为图像
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(imageData);
+
                 BufferedImage originalImage = ImageIO.read(inputStream);
 
                 imageLabel.setIcon(new ImageIcon(originalImage));

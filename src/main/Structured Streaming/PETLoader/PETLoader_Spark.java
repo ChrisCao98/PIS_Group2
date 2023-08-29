@@ -227,17 +227,20 @@ public class PETLoader_Spark<T> implements Serializable {
 //        System.out.println("good5");
     }
     public void reloadPET(Integer newID) throws Exception {
-        if (newID < 0 ){
-            throw new IllegalArgumentException();
-        } else if (newID >= size) {
-            System.out.println("PET ID out of bound! Reloading PET Library");
-            initialize();
-        }else {
-            System.out.println("Policy switched to " + newID);
-            id = newID;
-            quickLoad();
-            locateClass();
-        }
+//        if (newID < 0 ){
+//            throw new IllegalArgumentException();
+//        } else if (newID >= size) {
+//            System.out.println("PET ID out of bound! Reloading PET Library");
+//            initialize();
+//        }else {
+//            System.out.println("Policy switched to " + newID);
+//            id = newID;
+//            quickLoad();
+//            locateClass();
+//        }
+        // Uncomment the following code to test the redeployment latency
+        id = newID;
+        initialize();
     }
 //
 
