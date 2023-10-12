@@ -7,6 +7,9 @@ import java.awt.image.BufferedImage
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File, IOException}
 import javax.imageio.ImageIO
 
+/**
+ * I don't use this GUI. This GUI is written by scala.
+ */
 object ImageGUI extends Frame {
 
   private var byteArray: Array[Byte] = _

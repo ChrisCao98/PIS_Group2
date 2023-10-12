@@ -1,17 +1,18 @@
 package Util
 
 
+import scala.collection.mutable
 import scala.collection.mutable.HashMap
 
 class SaveInfo_Scala(
-                var PETPolicy: HashMap[String, Int] = HashMap("SPEED" -> 0, "IMAGE" -> 0, "LOCATION" -> 0),
-                var timestamp: Double = 0.0,
-                var location: List[(Double, Double)] = List.empty,
-                var altitude: Double = 0.0,
-                var acc_x: Double = 0.0,
-                var acc_y: Double = 0.0,
-                var vel: Double = 0.0,
-                var img: Array[Byte] = Array.emptyByteArray
+                      var PETPolicy: mutable.HashMap[String, Int] = mutable.HashMap("SPEED" -> 0, "IMAGE" -> 0, "LOCATION" -> 0),
+                      var timestamp: Double = 0.0,
+                      var location: List[(Double, Double)] = List.empty,
+                      var altitude: Double = 0.0,
+                      var acc_x: Double = 0.0,
+                      var acc_y: Double = 0.0,
+                      var vel: Double = 0.0,
+                      var img: Array[Byte] = Array.emptyByteArray
                    ) extends Serializable {
 
   def getPosition: (Double, Double) = location.headOption.getOrElse((0.0, 0.0))
@@ -28,7 +29,6 @@ class SaveInfo_Scala(
     PETPolicy(key) = value
   }
 
-  // 其他方法的实现...
 }
 
 object SaveInfo {

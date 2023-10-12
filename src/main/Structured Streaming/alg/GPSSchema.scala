@@ -2,6 +2,7 @@ package alg
 
 import org.apache.spark.sql.types._
 
+//Schema for the CSV-data.
 class GPSSchema {
   val schema: StructType = StructType(Seq(
     StructField("timestamp", DataTypes.DoubleType, nullable = true),

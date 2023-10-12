@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
+
+//This is for the User's control.
 public class UserInputToKafka {
 
     public static void main(String[] args) {

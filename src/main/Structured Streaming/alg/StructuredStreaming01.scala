@@ -8,6 +8,12 @@ import org.apache.spark.sql.{DataFrame, Encoder, Encoders, SparkSession}
 import java.sql.Timestamp
 import scala.collection.JavaConverters.asScalaBufferConverter
 
+/**
+ * Here is a variation for StructuredStreaming to test, if the pipeline can be reconstructed during the running.
+ * It proved that the StructuredStreaming can't reconstructed during the running by simply changing the function, which is
+ * already executed in the stream.
+ */
+
 object StructuredStreaming01 {
   private val BOOTSTRAP_SERVERS = "localhost:9092"
   val path: String = "config/Pipeconfig.json"
@@ -22,6 +28,8 @@ object StructuredStreaming01 {
     client.set("CameraSituation", "0")
     client.set("LocationSituation", "0")
     client.set("SpeedSituation", "0")
+
+
     client.close()
   }
 
@@ -45,8 +53,14 @@ object StructuredStreaming01 {
       .load()
     df
   }
-
-  object PipLineReconstruct {
+  /**
+   *This is the object,which is used to reconstruct the pipeline.
+   *  The function "select" is designed to dynamically change the stream, but this idea can't realize it.
+   *  Because in the main function, all the process was executed once before the datum are received.
+   *  That means the output of select function can't be changed.
+   *  That's why this idea is failed.
+   */
+  object PipeLineReconstruct {
     private var start_gps = true
     private var start_img = false
     private var start_location = false
@@ -112,7 +126,7 @@ object StructuredStreaming01 {
     //    val df_gps = load("test-data")
     //    val df_image = load("test-image")
     val df_input = load("test-user-input")
-    val df = PipLineReconstruct.select()
+    val df = PipeLineReconstruct.select()
 //    val df_gps = df._1
 //    val df_image = df._2
 //    if (df_gps != null){
@@ -138,7 +152,7 @@ object StructuredStreaming01 {
         .writeStream
         .outputMode("append")
         .format("console")
-        .option("truncate", false) // 可选：显示完整的列内容
+        .option("truncate", false)
         //      .trigger(Trigger.Continuous("10 milliseconds"))
         .start()
 //    }

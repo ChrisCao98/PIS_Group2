@@ -7,11 +7,15 @@ import org.apache.spark.sql._
 import java.io.{ByteArrayOutputStream, File}
 import javax.imageio.ImageIO
 
-
+/**
+ * This class is mainly to test a set of processes for images, before this there should be a set of processes for testing GPS data,
+ * but unfortunately I accidentally deleted it. In this class is mainly completed for the picture of the reading, processing,
+ * and save to the specified folder process.
+*/
 object demoimg {
   val GUI_img = new GUI()
 
-  // 自定义函数，用于读取图像文件
+  // read image data
   def readImage(filePath: String): Array[Byte] = {
     val imageFile = new File(filePath)
     val bufferedImage = ImageIO.read(imageFile)
@@ -53,7 +57,7 @@ object demoimg {
     }.toDF()
 
 
-    // 保存图像数据到指定文件夹
+    // Save image data to a specified folder
     val outputPath = "/home/chriscao/IdeaProjects/kfaka_no_gui/src/main/resources/testImage"
     val query = ff
       .writeStream

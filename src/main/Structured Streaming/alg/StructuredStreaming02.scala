@@ -7,7 +7,14 @@ import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.{DataFrame, Encoder, Encoders, ForeachWriter, Row, SparkSession}
 
 import java.sql.Timestamp
-//merge stream test,only a demo for gps-data and image-data
+/**
+ * Here is the second variation for StructuredStreaming.
+ * The difference between object StructuredStreaming02 and object StructuredStreaming is that i have tried to merge two kind
+ * of data, then i send the whole datum to process.
+ * Because i don't have the real timestamp for image data so i use the event timestamp to simulate the real timestamp.
+ * But it will cause the problem. Because of the latency i set the time interval as 2 seconds. The problem is that there
+ * may be many matched pairs. It have a big influence on executing performance.
+ */
 object StructuredStreaming02 {
   private val BOOTSTRAP_SERVERS = "localhost:9092"
   val path: String = "config/Pipeconfig.json"

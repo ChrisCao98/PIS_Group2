@@ -3,7 +3,9 @@ package Util;
 import scala.Tuple2;
 
 import static java.lang.Math.sqrt;
-
+/**
+ * This class is used to calculate the distance between two points.
+ */
 public class MathUtils {
     public static Double calculateDistance(Tuple2<Double, Double> p1, Tuple2<Double, Double> p2){
         Double x1 = p1._1;

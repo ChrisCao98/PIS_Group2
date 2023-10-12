@@ -6,7 +6,18 @@ import org.json.simple.parser.JSONParser
 
 import java.io.FileReader
 import java.util
-//here we can reach some pathInfo and GUI
+/**
+ * Because we save a lot of information into json files.
+So the main purpose of this class is to extract the path information from the json file into this class.
+In addition to this I also put the instantiated GUI into it.
+ */
+
+
+/**
+ * Because we save a lot of information into json files.
+ * So the main purpose of this class is to extract the path information from the json file into this class.
+ * In addition to this I also put the instantiated GUI into it.
+ */
 case class PathInfo(confPath: String) {
   protected var PETconfpath: String = _
   protected var ImageOutputPath: String = _
@@ -31,10 +42,7 @@ case class PathInfo(confPath: String) {
     GUI_img = new GUI()
   }
 
-  def loadPET(): Unit = {
-    // TODO: implementation
-    println("loadPET")
-  }
+
 
   def getPETconfpath: String = PETconfpath
 

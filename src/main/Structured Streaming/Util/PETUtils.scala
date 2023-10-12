@@ -14,16 +14,17 @@ import scala.collection.mutable.ListBuffer
 //import test.Location.{LocationAnonymizer00, LocationAnonymizer01}
 import scala.util.Try
 
-
+/**
+ * This class holds the main tools.
+ */
 class PETUtils extends Serializable {
-
-
-
-
+  /**
+   * This object mainly extracts the needed information and wraps it into an object.
+   */
   object TakeSomeInfo extends MapFunction[String, SaveInfo_Java] {
-    // 实现 call 方法
+
     override def call(line: String): SaveInfo_Java = {
-      // 将 Row 转换为 alg.SelectEvent 对象
+
       val words: Array[String] = line.split(",")
 
       val saveInfo_Java: SaveInfo_Java = new SaveInfo_Java(words(0).toDouble,
@@ -33,6 +34,8 @@ class PETUtils extends Serializable {
       )
       saveInfo_Java.recordTimer()
       saveInfo_Java
+
+      //The following code is used for testing.
 //      val selectEvent = alg.SelectEvent(
 //        gpsEvent.timestamp,
 //        gpsEvent.lat,
@@ -56,6 +59,9 @@ class PETUtils extends Serializable {
     }
   }
 
+  /**
+   * This object wraps image data into an object.
+   */
   object AddImageInfo extends MapFunction[Array[Byte], SaveInfo_Java] {
 
     override def call(array: Array[Byte]): SaveInfo_Java = {
@@ -68,8 +74,9 @@ class PETUtils extends Serializable {
   }
 
 
-
-
+  /**
+   * This is a test object for gps data.
+   */
   object EvaluationData extends MapFunction[SaveInfo_Java, SaveInfo_Java] {
     @volatile private var count = 0
     private val UserHome = new Tuple2[java.lang.Double, java.lang.Double](48.98561, 8.39571)
@@ -100,6 +107,9 @@ class PETUtils extends Serializable {
     }
   }
 
+  /**
+   * This is a test object for image data.
+   */
   object EvaluationImage extends MapFunction[SaveInfo_Java, SaveInfo_Java] {
     private val UserHome = new Tuple2[java.lang.Double, java.lang.Double](48.98561, 8.39571)
     private val thredhold = 0.00135
@@ -128,7 +138,9 @@ class PETUtils extends Serializable {
     }
   }
 
-
+  /**
+   * This class is used to evaluate which PET should be used.
+   */
   object Evaluation extends MapFunction[SaveInfo_Java, SaveInfo_Java] {
     private val UserHome = new Tuple2[java.lang.Double, java.lang.Double](48.98561, 8.39571)
     private val thredhold = 0.00135
@@ -143,11 +155,11 @@ class PETUtils extends Serializable {
     private var IMAGE_PET_ID : Int= _
     private val Type_I = "CameraPET"
 
+    private var dynamic : String = _
 
-    println(Type_S,SPEED_PET_ID)
-    println(Type_L,LOCATION_PET_ID)
-    println(Type_I,IMAGE_PET_ID)
-
+    /**
+     * This function mainly initialises the values of some member variables.
+     */
     def initialize(): Unit ={
       val client = RedisUtil.getJedisClient
 
@@ -159,62 +171,94 @@ class PETUtils extends Serializable {
       println("SpeedSituation: "+SpeedSituation)
       LocationSituation = if (client.get("LocationSituation") == "0") false else true
       CameraSituation = if (client.get("CameraSituation") == "0") false else true
+      dynamic = client.get("Dynamic")
       client.close()
     }
-
+    /**
+     * This function is used to update the ID value of the PET.
+     */
     def update(Type:String,ID:Int): Unit = {
       val client = RedisUtil.getJedisClient
       client.set(Type, ID.toString)
+
+
       Type match {
 
-        case "SPEED" => SPEED_PET_ID = client.get("SpeedPET").toInt
-        case "LOCATION" => LOCATION_PET_ID = client.get("LocationPET").toInt
-        case "IMAGE" => IMAGE_PET_ID = client.get("CameraPET").toInt
+        case "SpeedPET" =>
+          SPEED_PET_ID = client.get("SpeedPET").toInt
+        case "LocationPET" =>
+          LOCATION_PET_ID = client.get("LocationPET").toInt
+        case "CameraPET" =>
+          IMAGE_PET_ID = client.get("CameraPET").toInt
       }
       client.close()
     }
 
-
+    /**
+     * This function determines what the final PET ID will be.
+     */
     override def call(saveInfo: SaveInfo_Java): SaveInfo_Java = {
       initialize()
 
-//      if(SPEED_PET_ID==1){
+//      if(dynamic == "0"){
+//        println("***********")
+//        var starttime :Long = System.nanoTime()
 //        println("qie huan")
 //        val client = RedisUtil.getJedisClient
-//        client.set("start_img","true")
-//        client.close()
-//        //        stopQuery("test-image")
+//        client.set("Dynamic","1")
+////        client.close()
+//
+//        //test for remove stream
+//        SS03.stopQuery("test-image")
+//
+//        //test for add stream
 ////        SS03.addQuery("test-image")
 ////        StructuredStreaming01.PipLineReconstruct.select()
+//        var endtime :Long = System.nanoTime()
+//        var duration_add = (endtime-starttime).toString
+////        var fileWriter = new FileWriter("./data/switch_add.txt", true)
+//        var fileWriter = new FileWriter("./data/switch_remove.txt", true)
+//        val bufferedWriter = new BufferedWriter(fileWriter)
+//        val writer = new PrintWriter(bufferedWriter)
+//        writer.println(duration_add)
+//        writer.close()
+////        println("***************************")
+////        println("duration: "+(endtime-starttime))
+////        println("***************************")
 //      }
+      println("situation "+SpeedSituation)
+      println("situation "+LocationSituation)
+      println("situation "+CameraSituation)
 
       if (!SpeedSituation) {
-        saveInfo.setPETPolicy(Type_S, 0)
+        saveInfo.setPETPolicy("SPEED", 0)
       } else {
-        saveInfo.setPETPolicy(Type_S, SPEED_PET_ID)
+        saveInfo.setPETPolicy("SPEED", SPEED_PET_ID)
 
       }
 
       if (!LocationSituation) {
-        saveInfo.setPETPolicy(Type_L, 0)
+        saveInfo.setPETPolicy("LOCATION", 0)
       } else {
-        if (saveInfo.getPosition != null) {
+        println("********"+saveInfo.getLocation)
+        if (saveInfo.getLocation != null) {
           val distance = MathUtils.calculateDistance(UserHome, saveInfo.getPosition)
           val locationPET: Int = if (distance < thredhold) 1 else 0
           if (locationPET != LOCATION_PET_ID) {
             println("Policy changed from " + LOCATION_PET_ID + " to " + locationPET)
             update(Type_L, locationPET)
           }
-          saveInfo.setPETPolicy(Type_L, LOCATION_PET_ID)
+          saveInfo.setPETPolicy("LOCATION", LOCATION_PET_ID)
 
         }
       }
 
       if (!CameraSituation) {
-        saveInfo.setPETPolicy(Type_I, 0)
+        saveInfo.setPETPolicy("IMAGE", 0)
         println("c policy: 0")
       } else {
-        saveInfo.setPETPolicy(Type_I, IMAGE_PET_ID)
+        //for test,1 can be replaced by IMAGE_PET_ID
+        saveInfo.setPETPolicy("IMAGE", 1)
         println("c policy: 1")
       }
 
@@ -224,13 +268,17 @@ class PETUtils extends Serializable {
   }
 
   import org.apache.commons.csv.{CSVFormat, CSVPrinter}
-
+  /**
+   * This object is used to switch the PET and process the incoming data using the corresponding algorithm.
+   */
   object ApplyPET extends Serializable {
     def apply[T](confPath: String, Type: String): ApplyPET[T] = {
       new ApplyPET[T](confPath, Type)
     }
 
-
+    /**
+     * This class is the part that ends up manipulating the data.
+     */
     class ApplyPET[T](var confPath: String, var Type: String) extends MapFunction[SaveInfo_Java, SaveInfo_Java] {
       private var id: Integer = 0
       private var PETLoader: PETLoader_Spark[T] = _
@@ -238,19 +286,22 @@ class PETUtils extends Serializable {
       private var endTime: Long = _
       private var executionTime:String = _
       private var ss :String = _
-      println("zhixngjici")
 //      private val executionTimes_SPEED = ListBuffer[String]()
 //      private val executionTimes_LOCATION = ListBuffer[String]()
 //      private val executionTimes_IMAGE = ListBuffer[String]()
       private var fileWriter:FileWriter=_
+      //Initialise PETLoader
       PETLoader = new PETLoader_Spark(confPath, Type, id)
       PETLoader.instantiate()
-      println("ceshi")
 //      println(PETLoader.getSparkSession)
       //    println("***********************")
       //    println(PETLoader.getSize)
 
-      //       Reload PET method
+
+
+      /**
+       * This function is used for switching the PET
+       */
       private def reloadPET(): Try[Unit] = Try {
         startTime= System.currentTimeMillis()
 
@@ -277,8 +328,11 @@ class PETUtils extends Serializable {
         writer.println(ss)
         writer.close()
       }
-
+      /**
+       * This function is a call to the algorithm to manipulate the data.
+       */
       override def call(saveInfo: SaveInfo_Java): SaveInfo_Java = {
+        //If the id is different from the previous one. Then the PET has to be reloaded.
         if (id ne saveInfo.getPETPolicy.get(Type)) {
           ss = Type +" Switch Policy from "+id+" to "
 
@@ -290,12 +344,6 @@ class PETUtils extends Serializable {
 //        println("size:" + saveInfo.getTimerRecord.size())
         Type match {
           case "SPEED" =>
-//            if(aaaa){
-//              println("start")
-//              SS03.addQuery("test-image")
-//              println("finish")
-//            }
-
             val invoke_speed = PETLoader.invoke(saveInfo.getVel.asInstanceOf[T]).get(0).asInstanceOf[Double]
             saveInfo.setVel(invoke_speed)
           case "LOCATION" =>

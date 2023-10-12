@@ -11,7 +11,13 @@ import org.apache.spark.sql.{DataFrame, Encoder, Encoders, SparkSession}
 import java.sql.Timestamp
 import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.collection.mutable
-
+/**
+ * Here is the third variation for StructuredStreaming.
+ * The difference between object StructuredStreaming03 and object StructuredStreaming is that i have tried to dynamically
+ * add and remove stream.
+ * I use a list to record the name of topic and a hashmap to write the corresponding address of stream.
+ * The disadvantage of the method is for each topic should write a code.
+ */
 object SS03 {
   private val BOOTSTRAP_SERVERS = "localhost:9092"
   val path: String = "config/Pipeconfig.json"
@@ -20,8 +26,8 @@ object SS03 {
   val hashMap = new mutable.HashMap[String, StreamingQuery]()
   val queries = scala.collection.mutable.ArrayBuffer.empty[StreamingQuery]
 
-//  var topics: Seq[String] = Seq("test-data", "test-image", "test-user-input")
-    var topics: Seq[String] = Seq("test-data", "test-user-input")
+  var topics: Seq[String] = Seq("test-data", "test-image", "test-user-input")
+//    var topics: Seq[String] = Seq("test-data", "test-user-input")
   def getTopics(): Seq[String] = {
     topics
   }
@@ -39,6 +45,15 @@ object SS03 {
     client.set("CameraSituation", "0")
     client.set("LocationSituation", "0")
     client.set("SpeedSituation", "0")
+
+    /**
+     * Test dynamically adding or removing streams
+     */
+//    client.set("CameraSituation", "1")
+//    client.set("LocationSituation", "1")
+//    client.set("SpeedSituation", "1")
+//    client.set("Dynamic", "1")
+
     client.close()
   }
 
@@ -67,7 +82,9 @@ object SS03 {
     df
   }
 
-
+  /**
+   * This function is designed to remove a stream. The input is the name of topic.
+   */
   def stopQuery(name: String): Unit = {
     if(topics.contains(name))
       println(name)
@@ -81,7 +98,9 @@ object SS03 {
       println(topics)
   }
 
-
+  /**
+   * This function is designed to add a stream. The input is the name of topic.
+   */
   def addQuery(newtopic: String):Unit = {
     if (!topics.contains(newtopic) && newtopic.equals("test-image")) {
       val query = queryForImage("test-image")
@@ -93,18 +112,24 @@ object SS03 {
     }
   }
 
+  /**
+   * This function is designed to remove all the streams.
+   */
   def stopAll(): Unit = {
     for (query <- queries) {
       query.stop()
     }
   }
 
+  /**
+   * This function is designed for GPS data.
+   */
   def queryForGPS(topic: String): StreamingQuery = {
     val query = load(topic)
       .selectExpr("CAST(value AS STRING)")
       .as[String]
       .map(new PETUtils().TakeSomeInfo, saveInfoEncoder)
-      .map(Evaluation, saveInfoEncoder)
+      .map(new PETUtils().Evaluation, saveInfoEncoder)
       .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "SPEED"), saveInfoEncoder)
       //      .map(new PETUtils().ApplyPET(pathInfo.getPETconfpath, "LOCATION"),saveInfoEncoder)
       .map { SaveInfo_Java
@@ -128,6 +153,9 @@ object SS03 {
     query
   }
 
+  /**
+   * This function is designed for image data.
+   */
   def queryForImage(topic: String): StreamingQuery = {
     val query = load(topic).select("value")
       .as[Array[Byte]]

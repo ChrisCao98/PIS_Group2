@@ -8,7 +8,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-
+/**
+ * The main purpose of this class is to convert an array of type byte into an image and then display it.
+ */
 public class GUI extends JFrame {
     private JLabel imageLabel;
 

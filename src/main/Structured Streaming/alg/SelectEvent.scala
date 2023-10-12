@@ -1,5 +1,6 @@
 package alg
 
+//only for demo and test
 case class SelectEvent(
                         timestamp: Double,
                         lat: Double,

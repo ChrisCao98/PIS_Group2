@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
-
+//It can send data to Kafka.
 public class CSVToKafka {
     private static final String TOPIC_NAME = "test-data";
     private static final String BOOTSTRAP_SERVERS = "localhost:9092";

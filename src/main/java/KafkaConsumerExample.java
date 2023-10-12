@@ -4,7 +4,7 @@ import org.apache.kafka.common.*;
 
 import java.time.Duration;
 import java.util.*;
-
+//It is an example to consume data from Kafka.
 public class KafkaConsumerExample {
     public static void main(String[] args) {
         Properties props = new Properties();

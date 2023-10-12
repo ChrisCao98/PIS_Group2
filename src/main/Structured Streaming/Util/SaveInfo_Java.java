@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.io.Serializable;
-
+/**
+ * This class is used to extract important information and store it.
+ */
 public class SaveInfo_Java implements Serializable{
     private HashMap<String, Integer> PETPolicy;
     private Double timestamp;
@@ -19,7 +21,7 @@ public class SaveInfo_Java implements Serializable{
     private byte[] img;
     protected ArrayList<Long> TimerRecord;
 
-
+    //record the time
     public void recordTimer(){
         TimerRecord.add(System.nanoTime());
     }
@@ -27,7 +29,7 @@ public class SaveInfo_Java implements Serializable{
     public ArrayList<Long> getTimerRecord() {
         return TimerRecord;
     }
-
+    //Constructor that initialises all id to 0
     public SaveInfo_Java() {
         PETPolicy = new HashMap<>();
         PETPolicy.put("SPEED", 0);

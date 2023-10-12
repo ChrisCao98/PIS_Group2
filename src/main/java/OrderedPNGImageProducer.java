@@ -9,7 +9,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+
+//It can simulate send image to Kafka.
 public class OrderedPNGImageProducer {
+
 
     public static void main(String[] args) {
         // Kafka configuration

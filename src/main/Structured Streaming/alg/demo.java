@@ -7,7 +7,10 @@ import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-
+/**
+ * This is the very first test, which is written in java. It reads data from a CSV file and outputs it on the console.
+ * But it didn't run successfully, later I tested it using scala language and it ran successfully.
+*/
 public class demo {
     public static void main(String[] args) throws Exception {
         // 创建SparkSession

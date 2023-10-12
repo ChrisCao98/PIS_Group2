@@ -1,5 +1,6 @@
 package alg
 
+//only for test.
 case class GPSEvent(
                      timestamp: Double,
                      lat: Double,

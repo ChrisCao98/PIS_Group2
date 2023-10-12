@@ -2,7 +2,9 @@ package Util
 
 
 import scala.math.sqrt
-
+/**
+ * This is the version of scala.
+ */
 object MathUtil_Scala {
   def calculateDistance(p1: (Double, Double), p2: (Double, Double)): Double = {
     val x1 = p1._1

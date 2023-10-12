@@ -2,15 +2,18 @@ package Util
 
 import org.apache.spark.sql.ForeachWriter
 import redis.clients.jedis.Jedis
-
+/**
+ *  The purpose of this class is to accept input from the user and
+ *  then write to the redis server based on the user's input.
+ */
 class RedisWriter extends ForeachWriter[String] {
   private var jedisClient: Jedis = _
-
+  //Open the connection to get an instance
   override def open(partitionId: Long, epochId: Long): Boolean = {
     jedisClient = RedisUtil.getJedisClient
     jedisClient != null && jedisClient.isConnected
   }
-
+  //Determine what action to do based on the input.
   override def process(value: String): Unit = {
     if (value.startsWith("change")) {
       // change the user-specified PET policy
@@ -62,7 +65,7 @@ class RedisWriter extends ForeachWriter[String] {
 //        println("Wrong command.")
 //    }
   }
-
+  //close the connection
   override def close(errorOrNull: Throwable): Unit = {
     if (jedisClient != null && jedisClient.isConnected) {
       jedisClient.close()
