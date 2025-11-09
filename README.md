@@ -1,7 +1,7 @@
 # PIS_Group2
 ## Project Introduction
 We aim to evaluate different types of latency under the same scenario with varying frame rates — such as flow latency, redeployment latency, and others.
-Our work focuses on Spark Structured Streaming. Kafka is used as a message broker to simulate continuous data input. The incoming data is encapsulated into a class, processed through the application logic, and finally written to a sink for analysis.
+My work focuses on Spark Structured Streaming. Kafka is used as a message broker to simulate continuous data input. The incoming data is encapsulated into a class, processed through the application logic, and finally written to a sink for analysis.
 
 ## Install
 This project need [Spark](https://spark.apache.org/downloads.html),
