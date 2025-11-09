@@ -1,10 +1,7 @@
 # PIS_Group2
 ## Project Introduction
-We want to evaluate the different type of latency or something else
-in the same scenario with different frame.Such as flow latency, redeployment latency and so an. 
-My work is about Spark Structured Streaming. We use kafka to simulate 
-the input of data. The input data is then wrapped into a class, 
-which is then passed into the code-logic, and finally a sink receives it.
+We aim to evaluate different types of latency under the same scenario with varying frame rates — such as flow latency, redeployment latency, and others.
+Our work focuses on Spark Structured Streaming. Kafka is used as a message broker to simulate continuous data input. The incoming data is encapsulated into a class, processed through the application logic, and finally written to a sink for analysis.
 
 ## Install
 This project need [Spark](https://spark.apache.org/downloads.html),
