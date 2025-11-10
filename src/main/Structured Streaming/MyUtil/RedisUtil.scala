@@ -1,4 +1,4 @@
-package Util
+package MyUtil
 
 
 import redis.clients.jedis.{Jedis, JedisPool, JedisPoolConfig}

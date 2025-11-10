@@ -1,6 +1,6 @@
 package alg
 
-import Util.GUI
+import MyUtil.GUI
 import org.json.simple.JSONObject
 import org.json.simple.parser.JSONParser
 

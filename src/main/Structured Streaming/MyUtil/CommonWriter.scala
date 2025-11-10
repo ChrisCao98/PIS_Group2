@@ -1,4 +1,4 @@
-package Util
+package MyUtil
 
 import org.apache.commons.csv.{CSVFormat, CSVPrinter}
 import org.apache.spark.sql.ForeachWriter

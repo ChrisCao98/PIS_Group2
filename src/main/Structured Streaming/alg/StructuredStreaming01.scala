@@ -1,7 +1,7 @@
 package alg
 import alg.config.PropertiesConfig
 
-import Util.{PETUtils, RedisUtil, RedisWriter, SaveInfo_Java}
+import MyUtil.{PETUtils, RedisUtil, RedisWriter, SaveInfo_Java}
 import org.apache.spark.sql.streaming.StreamingQuery
 import org.apache.spark.sql.{DataFrame, Encoder, Encoders, SparkSession}
 

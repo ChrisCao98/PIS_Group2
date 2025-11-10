@@ -1,4 +1,4 @@
-package Util
+package MyUtil
 
 
 import java.awt.{Frame, Graphics, Image, MediaTracker, Toolkit}

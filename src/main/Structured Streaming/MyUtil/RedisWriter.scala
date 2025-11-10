@@ -1,4 +1,4 @@
-package Util
+package MyUtil
 
 import org.apache.spark.sql.ForeachWriter
 import redis.clients.jedis.Jedis

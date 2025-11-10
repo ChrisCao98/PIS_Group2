@@ -1,4 +1,4 @@
-package Util
+package MyUtil
 
 import alg.StructuredStreaming.pathInfo
 /**
