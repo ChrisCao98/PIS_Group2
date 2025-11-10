@@ -21,7 +21,7 @@ import scala.collection.mutable
  */
 object SS03 {
   private val BOOTSTRAP_SERVERS = PropertiesConfig.getProperty("kafka.bootstrap.servers", "localhost:9092")
-  private val configPath = PropertiesConfig.getProperty("pet.config.path", "config/Pipeconfig.json")
+  private val configPath = PropertiesConfig.getProperty("pipe.config.path", "config/Pipeconfig.json")
   val pathInfo = PathInfo(configPath)
   initialize()
   val hashMap = new mutable.HashMap[String, StreamingQuery]()

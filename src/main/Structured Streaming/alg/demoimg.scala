@@ -41,7 +41,8 @@ object demoimg {
       .readStream
       .format("kafka")
       .option("kafka.bootstrap.servers", PropertiesConfig.getProperty("kafka.bootstrap.servers", "localhost:9092"))
-      .option("subscribe", PropertiesConfig.getProperty("kafka.topics", "test-image"))
+      //      .option("subscribe", "test-data,test-image,test-user-input")
+      .option("subscribe", "test-image")
       .load()
       .select("value")
       .as[Array[Byte]]

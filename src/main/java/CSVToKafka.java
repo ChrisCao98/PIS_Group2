@@ -32,7 +32,6 @@ public class CSVToKafka {
         
         // Print current configuration (optional)
         config.printConfig();
-        
         // Read CSV file content
         List<String[]> csvData = readCSVFile();
 

@@ -43,13 +43,14 @@ public class OrderedPNGImageProducer {
 
             // Read PNG image files from the configured folder
             File folder = new File(folderPath);
-            File[] imageFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".png"));
+            File[] imageFiles = folder.listFiles();
 
-            // Sort the image files based on numeric part of filenames
+            // Sort the image files based on file name for ordered processing
             List<File> orderedFiles = new ArrayList<>();
             if (imageFiles != null) {
-                orderedFiles.addAll(Arrays.asList(imageFiles));
-                // Sort files based on numeric order in filenames
+                for (File file : imageFiles) {
+                    orderedFiles.add(file);
+                }
                 orderedFiles.sort(Comparator.comparing(OrderedPNGImageProducer::getNumericOrder));
             }
             

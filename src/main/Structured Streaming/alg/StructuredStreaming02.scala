@@ -1,5 +1,5 @@
 package alg
-
+import alg.config.PropertiesConfig
 import Util.{CsvWriter, PETUtils, RedisUtil, RedisWriter, SaveInfo_Java}
 import alg.StructuredStreaming.pathInfo
 import org.apache.spark.sql.functions.{col, expr, lit}
@@ -16,9 +16,9 @@ import java.sql.Timestamp
  * may be many matched pairs. It have a big influence on executing performance.
  */
 object StructuredStreaming02 {
-  private val BOOTSTRAP_SERVERS = "localhost:9092"
-  val path: String = "config/Pipeconfig.json"
-  val pathInfo = PathInfo(path)
+  private val BOOTSTRAP_SERVERS = PropertiesConfig.getProperty("kafka.bootstrap.servers", "localhost:9092")
+  private val configPath = PropertiesConfig.getProperty("pipe.config.path", "config/Pipeconfig.json")
+  val pathInfo = PathInfo(configPath)
   initialize()
 
   def initialize(): Unit = {

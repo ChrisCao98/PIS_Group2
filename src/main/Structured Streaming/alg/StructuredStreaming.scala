@@ -1,6 +1,5 @@
 package alg
-
-
+import alg.config.PropertiesConfig
 import Util.{CsvWriter, ImgWriter, PETUtils, RedisUtil, RedisWriter, SaveInfo_Java}
 import org.apache.commons.csv.{CSVFormat, CSVPrinter}
 import org.apache.spark.sql.functions.{col, concat_ws}
@@ -16,10 +15,9 @@ import scala.collection.JavaConverters.asScalaBufferConverter
  * In this class, I assume that I have three types of data, each consumed from kafka for separate processing.
  */
 object StructuredStreaming {
-  private val BOOTSTRAP_SERVERS = "localhost:9092"
-//  private val BOOTSTRAP_SERVERS = "192.168.1.181:9092"
-  val path: String = "config/Pipeconfig.json"
-  val pathInfo = PathInfo(path)
+  private val BOOTSTRAP_SERVERS = PropertiesConfig.getProperty("kafka.bootstrap.servers", "localhost:9092")
+  private val configPath = PropertiesConfig.getProperty("pipe.config.path", "config/Pipeconfig.json")
+  val pathInfo = PathInfo(configPath)
   initialize()
 
   /**

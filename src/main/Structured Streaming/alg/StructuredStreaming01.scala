@@ -1,5 +1,5 @@
 package alg
-
+import alg.config.PropertiesConfig
 
 import Util.{PETUtils, RedisUtil, RedisWriter, SaveInfo_Java}
 import org.apache.spark.sql.streaming.StreamingQuery
@@ -15,9 +15,9 @@ import scala.collection.JavaConverters.asScalaBufferConverter
  */
 
 object StructuredStreaming01 {
-  private val BOOTSTRAP_SERVERS = "localhost:9092"
-  val path: String = "config/Pipeconfig.json"
-  val pathInfo = PathInfo(path)
+  private val BOOTSTRAP_SERVERS = PropertiesConfig.getProperty("kafka.bootstrap.servers", "localhost:9092")
+  private val configPath = PropertiesConfig.getProperty("pipe.config.path", "config/Pipeconfig.json")
+  val pathInfo = PathInfo(configPath)
   initialize()
 
   def initialize(): Unit = {
