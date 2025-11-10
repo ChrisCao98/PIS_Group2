@@ -1,6 +1,7 @@
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import config.KafkaConfig;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,36 +9,50 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
-
-//This is for the User's control.
+/**
+ * UserInputToKafka - A Kafka producer that:
+ * 1. Listens for user input via netcat on a configured port
+ * 2. Forwards received input to a Kafka topic
+ * 3. Uses configurable settings from properties file
+ */
 public class UserInputToKafka {
 
     public static void main(String[] args) {
-        // Kafka configuration
+        // Load configuration from properties file and other sources
+        KafkaConfig config = new KafkaConfig(args);
+        
+        // Set up Kafka producer properties with configured values
         Properties props = new Properties();
-        props.put("bootstrap.servers", "localhost:9092");
+        props.put("bootstrap.servers", config.getBootstrapServers());
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        String topic = "test-user-input";
+        
+        // Get topic name from configuration
+        String topic = config.getUserInputTopicName();
 
         // Create Kafka producer
         Producer<String, String> producer = new KafkaProducer<>(props);
 
         try {
-            // Start nc command as a child process
-            ProcessBuilder processBuilder = new ProcessBuilder("nc", "-lk", "7777");
+            // Start netcat command as a child process with configured port
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                "nc", "-lk", String.valueOf(config.getNcPort())
+            );
             Process process = processBuilder.start();
 
-            // Read the output from nc command
+            // Set up reader for netcat output
             InputStream inputStream = process.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
+            System.out.println("Listening for input on port " + config.getNcPort());
+            System.out.println("Messages will be sent to topic: " + topic);
+            
             String line;
             while ((line = reader.readLine()) != null) {
-                // Send the data to Kafka
+                // Create and send record to Kafka
                 ProducerRecord<String, String> record = new ProducerRecord<>(topic, null, line);
                 producer.send(record);
-                System.out.println("Data sent to Kafka: " + line);
+                System.out.println("Message sent to Kafka: " + line);
             }
 
         } catch (IOException e) {

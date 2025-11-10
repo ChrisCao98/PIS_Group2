@@ -2,7 +2,8 @@ package alg
 
 import Util.{MathUtils, PETUtils, RedisUtil, SaveInfo_Java}
 import alg.SS03.pathInfo
-import alg.StructuredStreaming.{BOOTSTRAP_SERVERS, initialize, pathInfo, spark}
+import alg.StructuredStreaming.{initialize, pathInfo, spark}
+import alg.config.PropertiesConfig
 import org.apache.kafka.common.internals.Topic
 import org.apache.spark.api.java.function.MapFunction
 import org.apache.spark.sql.streaming.StreamingQuery
@@ -19,9 +20,9 @@ import scala.collection.mutable
  * The disadvantage of the method is for each topic should write a code.
  */
 object SS03 {
-  private val BOOTSTRAP_SERVERS = "localhost:9092"
-  val path: String = "config/Pipeconfig.json"
-  val pathInfo = PathInfo(path)
+  private val BOOTSTRAP_SERVERS = PropertiesConfig.getProperty("kafka.bootstrap.servers", "localhost:9092")
+  private val configPath = PropertiesConfig.getProperty("pet.config.path", "config/Pipeconfig.json")
+  val pathInfo = PathInfo(configPath)
   initialize()
   val hashMap = new mutable.HashMap[String, StreamingQuery]()
   val queries = scala.collection.mutable.ArrayBuffer.empty[StreamingQuery]
@@ -76,7 +77,7 @@ object SS03 {
     val df = spark
       .readStream
       .format("kafka")
-      .option("kafka.bootstrap.servers", BOOTSTRAP_SERVERS)
+      .option("kafka.bootstrap.servers", PropertiesConfig.getProperty("kafka.bootstrap.servers", "localhost:9092"))
       .option("subscribe", TopicName)
       .load()
     df

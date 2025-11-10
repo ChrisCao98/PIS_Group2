@@ -1,7 +1,7 @@
 package alg
 
-
 import Util.{GUI, PETUtils, SaveInfo_Java}
+import alg.config.PropertiesConfig
 import org.apache.spark.sql._
 
 import java.io.{ByteArrayOutputStream, File}
@@ -25,19 +25,23 @@ object demoimg {
   }
 
   def main(args: Array[String]): Unit = {
-    val path: String = "config/Pipeconfig.json"
-    val pathInfo = PathInfo(path)
-    val spark = SparkSession.builder().appName("ImageProcessing").master("local[*]").getOrCreate()
+    // 从配置文件加载配置
+    val configPath = PropertiesConfig.getProperty("pet.config.path", "config/Pipeconfig.json")
+    val pathInfo = PathInfo(configPath)
+    
+    val spark = SparkSession.builder()
+      .appName("ImageProcessing")
+      .master("local[*]")
+      .getOrCreate()
+      
     import spark.implicits._
     implicit val saveInfoEncoder: Encoder[SaveInfo_Java] = Encoders.javaSerialization[SaveInfo_Java]
-
 
     val df_img = spark
       .readStream
       .format("kafka")
-      .option("kafka.bootstrap.servers", "localhost:9092")
-      //      .option("subscribe", "test-data,test-image,test-user-input")
-      .option("subscribe", "test-image")
+      .option("kafka.bootstrap.servers", PropertiesConfig.getProperty("kafka.bootstrap.servers", "localhost:9092"))
+      .option("subscribe", PropertiesConfig.getProperty("kafka.topics", "test-image"))
       .load()
       .select("value")
       .as[Array[Byte]]
@@ -58,13 +62,14 @@ object demoimg {
 
 
     // Save image data to a specified folder
-    val outputPath = "/home/chriscao/IdeaProjects/kfaka_no_gui/src/main/resources/testImage"
+    val outputPath = PropertiesConfig.getProperty("image.output.path", "src/main/resources/testImage")
     val query = ff
       .writeStream
       .foreachBatch { (batchDF:DataFrame, batchId:Long) =>
         batchDF.foreach { row =>
           val imageBytes = row.getAs[Array[Byte]]("value")
           GUI_img.displayImage(imageBytes)
+          println(s"Processing batch $batchId - Displaying image in GUI")
         }
       }
       .start()

@@ -8,11 +8,37 @@ import plotly.express as px
 from tqdm import tqdm
 from PIL import Image
 import os
+import configparser
+import sys
+from pathlib import Path
 
 
-# global variables
-gif_save_pth = './gifs'
-img_path = './img'
+def load_config():
+    """加载配置文件，如果不存在则创建默认配置"""
+    config = configparser.ConfigParser()
+    config_path = Path(__file__).parent / 'config.ini'
+    
+    if not config_path.exists():
+        # 创建默认配置
+        config['Paths'] = {
+            'gif_save_path': './gifs',
+            'img_path': './img',
+            'gps_csv_path': './gps_info.csv',
+            'raw_gps_path': '../raw/oxts',
+            'result_gif_path': './result.gif'
+        }
+        # 保存默认配置
+        with open(config_path, 'w') as f:
+            config.write(f)
+    
+    config.read(config_path)
+    return config
+
+
+# 加载配置
+config = load_config()
+gif_save_pth = config.get('Paths', 'gif_save_path')
+img_path = config.get('Paths', 'img_path')
 
 def convert_img_index():
     file_list = os.listdir(img_path)
@@ -107,18 +133,21 @@ def generate_gif():
         # img.save(f'./test/{count}.png')
         # img.show()
         output.append(img)
-    img.save('./result.gif', save_all=True, append_images=output) 
+    result_path = config.get('Paths', 'result_gif_path')
+    img.save(result_path, save_all=True, append_images=output)
 
 
 def main():
     # proceccing gps data
-    if os.path.exists('./gps_info.csv'):
+    gps_csv_path = config.get('Paths', 'gps_csv_path')
+    raw_gps_path = config.get('Paths', 'raw_gps_path')
+    
+    if os.path.exists(gps_csv_path):
         # load if you have already the data
-        gps_df = pd.read_csv('./gps_info.csv')
+        gps_df = pd.read_csv(gps_csv_path)
     else:
-        gps_path = '../raw/oxts'
-        gps_df = process_gps_data(gps_path)
-        gps_df.to_csv('gps_info.csv')
+        gps_df = process_gps_data(raw_gps_path)
+        gps_df.to_csv(gps_csv_path)
     # plot_gps_data(gps_df)
     # generate_gif_pic(gps_df)
     generate_gif()

@@ -1,6 +1,7 @@
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import config.KafkaConfig;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -10,17 +11,25 @@ import java.io.IOException;
 import java.util.*;
 
 
-//It can simulate send image to Kafka.
+/**
+ * Kafka Producer for PNG images that:
+ * 1. Reads PNG images from a configured directory
+ * 2. Orders them by numeric part of filenames
+ * 3. Sends them to Kafka in batches with configurable intervals
+ */
 public class OrderedPNGImageProducer {
-
-
     public static void main(String[] args) {
-        // Kafka configuration
+        // Load configuration from properties file and other sources
+        KafkaConfig config = new KafkaConfig(args);
+        
+        // Set up Kafka producer properties
         Properties props = new Properties();
-        props.put("bootstrap.servers", "localhost:9092");
+        props.put("bootstrap.servers", config.getBootstrapServers());
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer");
-        String topic = "test-image";
+
+        // Get topic name from configuration
+        String topic = config.getImageTopicName();
 
         // Create Kafka producer
         Producer<String, byte[]> producer = new KafkaProducer<>(props);
@@ -29,28 +38,28 @@ public class OrderedPNGImageProducer {
         int size, interval = 0, k = 0, upbound;
 
         try {
-            // Specify the folder containing PNG images
-            String folderPath = "/home/chriscao/IdeaProjects/data/img_resize";
+            // Get image folder path from configuration
+            String folderPath = config.getImageFolderPath();
 
-            // Read PNG image files from the folder
+            // Read PNG image files from the configured folder
             File folder = new File(folderPath);
-            File[] imageFiles = folder.listFiles();
+            File[] imageFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".png"));
 
-            // Sort the image files based on file name for ordered processing
+            // Sort the image files based on numeric part of filenames
             List<File> orderedFiles = new ArrayList<>();
             if (imageFiles != null) {
-                for (File file : imageFiles) {
-                    orderedFiles.add(file);
-                }
+                orderedFiles.addAll(Arrays.asList(imageFiles));
+                // Sort files based on numeric order in filenames
                 orderedFiles.sort(Comparator.comparing(OrderedPNGImageProducer::getNumericOrder));
             }
-            // Process the ordered image files
-            if (orderedFiles != null) {
+            
+            // Start processing the ordered image files
+            if (!orderedFiles.isEmpty()) {
                 while(true){
-                    System.out.println("Hint(pattern size (interval_line))：");
+                    System.out.println("Enter command (format: run <size> [interval_ms]):");
                     String input = scanner.nextLine();
-                    // 使用空格分隔输入
-                    String[] words = input.split(" ");
+                    // Split input by spaces
+                    String[] words = input.trim().split("\\s+");
                     if (words[0].equals("run")) {
                         switch (words.length) {
                             case 2:
